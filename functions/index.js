@@ -10,7 +10,7 @@ const app = dialogflow({
   });
 
 app.intent('Default Welcome Intent', (conv) => {
-  conv.close('Hello, World!');
+  conv.close(`${user}`);
   // Complete your fulfillment logic and
   // send a response when the function is done executing
 });
