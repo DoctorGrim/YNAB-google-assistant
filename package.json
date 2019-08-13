@@ -21,5 +21,6 @@
   "bugs": {
     "url": "https://github.com/DoctorGrim/YNAB-google-assistant/issues"
   },
-  "homepage": "https://github.com/DoctorGrim/YNAB-google-assistant#readme"
+  "homepage": "https://github.com/DoctorGrim/YNAB-google-assistant#readme",
+  "dependencies": {}
 }
