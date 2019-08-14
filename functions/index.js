@@ -20,13 +20,8 @@ function search(nameKey, myArray) {
     if (myArray[i].name == nameKey) {
       return myArray[i];
     }
-    // IF the above code doesn't work, the following code block will run. THIS PREVENTS the app from crashing, as before if the first logic flow failed, there was no fallback, so the conversation would end. -mjb
-    else {
-      return app.intent("Default Fallback Intent", conv => {
-        conv.ask(`I'm sorry, I didn't quite get that. Could you please repeat it? If it still doesn't work, try typing the budget name verbatim.`);
-      })
-    }
   }
+  return "No Match";
 }
 //This intent is triggered by giving a category. It fetches all the budget categories from the default budget for the current month.
 //The returned categories are parsed down to the name, balance, and budgeted amount (we may not need this). We then use a search function
@@ -36,48 +31,51 @@ app.intent("get balance", (conv, { categories }) => {
   const ynabAPI = new ynab.API(conv.user.raw.accessToken);
 
   //Leave the if/else commented out for now. This way we force a fetch each time. This let's us update our information between requests. Eventually
-  //this should be a lamda request. 
+  //this should be a lamda request.
 
   // if (!conv.data.balances) {
-    return ynabAPI.months.getBudgetMonth("default", "current").then(r => {
-      const ynabCategories = r.data.month.categories;
-      //conv.data.balances will store all the budget information will in the conversation. Use this to check if the data has already been fetched.
-      conv.data.balances = ynabCategories.map(c => {
-        return {
-          name: c.name.toLowerCase(),
-          balance: ynab.utils
-            .convertMilliUnitsToCurrencyAmount(c.balance, 2)
-            .toFixed(2),
-          budgeted: ynab.utils
-            .convertMilliUnitsToCurrencyAmount(c.budgeted, 2)
-            .toFixed(2)
-        };
-      });
-      const categoryObj = search(categories, conv.data.balances);
-      if (categoryObj.balance === categoryObj.budgeted && categoryObj.budgeted != undefined) {
-        /* There MUST be BOTH a category budget AND the budget CANNOT be undefined for this code block to run -mjb */
-        conv.ask(
-          `You have all $${
-            categoryObj.budgeted
-          } of your ${categoryObj.name} budget remaining.`
-        );
-      } else if (categoryObj.budgeted == undefined) {
-        // IF the category budget is undefined (budget doesn't exist), run the following code block -mjb
-        conv.ask(
-        `I'm sorry, but I'm not sure I can find that budget. Please try again.`
-)
-      } else {
-        if (categoryObj.balance >= 0) {
-          conv.ask(
-            `You have $${categoryObj.balance} remaining of $${
-              categoryObj.budgeted
-            } budgeted for ${categoryObj.name}.`
-          );
-        } else {
-          conv.ask(`You are over your ${categoryObj.name} budget by $${-categoryObj.balance}`);
-        }
-      }
+  return ynabAPI.months.getBudgetMonth("default", "current").then(r => {
+    const ynabCategories = r.data.month.categories;
+    //conv.data.balances will store all the budget information will in the conversation. Use this to check if the data has already been fetched.
+    conv.data.balances = ynabCategories.map(c => {
+      return {
+        name: c.name.toLowerCase(),
+        balance: ynab.utils
+          .convertMilliUnitsToCurrencyAmount(c.balance, 2)
+          .toFixed(2),
+        budgeted: ynab.utils
+          .convertMilliUnitsToCurrencyAmount(c.budgeted, 2)
+          .toFixed(2)
+      };
     });
+    const categoryObj = search(categories, conv.data.balances);
+    if (
+      categoryObj.balance === categoryObj.budgeted &&
+      categoryObj.balance != undefined
+    ) {
+      conv.ask(
+        `You have all $${categoryObj.budgeted} of your ${
+          categoryObj.name
+        } budget remaining.`
+      );
+    } else if (categoryObj.balance >= 0) {
+      conv.ask(
+        `You have $${categoryObj.balance} remaining of $${
+          categoryObj.budgeted
+        } budgeted for ${categoryObj.name}.`
+      );
+    } else if (categoryObj.balance < 0) {
+      conv.ask(
+        `You are over your ${
+          categoryObj.name
+        } budget by $${-categoryObj.balance}`
+      );
+    } else {
+      conv.ask(
+        `I'm sorry, I couldn't find a matching budget. Please try again.`
+      );
+    }
+  });
   // } else {
   //   //Find in the logs if a second request uses the stored budget or fetches new data.
   //   //If we're adding new transactions this will have to be removed or we'll need to use delta requests.
