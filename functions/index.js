@@ -53,23 +53,27 @@ app.intent("get balance", (conv, { categories }) => {
       categoryObj.balance === categoryObj.budgeted &&
       categoryObj.balance != undefined
     ) {
+      // If the user has all of their budgeted available.
       conv.ask(
         `You have all $${categoryObj.budgeted} of your ${
           categoryObj.name
         } budget remaining.`
       );
+      // If a user has spent some, but is still in the green.
     } else if (categoryObj.balance >= 0) {
       conv.ask(
         `You have $${categoryObj.balance} remaining of $${
           categoryObj.budgeted
         } budgeted for ${categoryObj.name}.`
       );
+      // If a user has gone over their budget.
     } else if (categoryObj.balance < 0) {
       conv.ask(
         `You are over your ${
           categoryObj.name
         } budget by $${-categoryObj.balance}`
       );
+      // In the case that no category is found, this will ask the user to try again.
     } else {
       conv.ask(
         `I'm sorry, I couldn't find a matching budget. Please try again.`
