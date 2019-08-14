@@ -22,5 +22,10 @@
     "url": "https://github.com/DoctorGrim/YNAB-google-assistant/issues"
   },
   "homepage": "https://github.com/DoctorGrim/YNAB-google-assistant#readme",
-  "dependencies": {}
+  "dependencies": {
+    "actions-on-google": "^2.11.0",
+    "firebase-admin": "^8.3.0",
+    "firebase-functions": "^3.2.0",
+    "ynab": "^1.15.0"
+  }
 }
