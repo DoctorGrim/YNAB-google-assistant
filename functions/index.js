@@ -20,6 +20,12 @@ function search(nameKey, myArray) {
     if (myArray[i].name == nameKey) {
       return myArray[i];
     }
+    // IF the above code doesn't work, the following code block will run. THIS PREVENTS the app from crashing, as before if the first logic flow failed, there was no fallback, so the conversation would end. -mjb
+    else {
+      return app.intent("Default Fallback Intent", conv => {
+        conv.ask(`I'm sorry, I didn't quite get that. Could you please repeat it? If it still doesn't work, try typing the budget name verbatim.`);
+      })
+    }
   }
 }
 //This intent is triggered by giving a category. It fetches all the budget categories from the default budget for the current month.
@@ -48,12 +54,18 @@ app.intent("get balance", (conv, { categories }) => {
         };
       });
       const categoryObj = search(categories, conv.data.balances);
-      if (categoryObj.balance === categoryObj.budgeted) {
+      if (categoryObj.balance === categoryObj.budgeted && categoryObj.budgeted != undefined) {
+        /* There MUST be BOTH a category budget AND the budget CANNOT be undefined for this code block to run -mjb */
         conv.ask(
           `You have all $${
             categoryObj.budgeted
           } of your ${categoryObj.name} budget remaining.`
         );
+      } else if (categoryObj.budgeted == undefined) {
+        // IF the category budget is undefined (budget doesn't exist), run the following code block -mjb
+        conv.ask(
+        `I'm sorry, but I'm not sure I can find that budget. Please try again.`
+)
       } else {
         if (categoryObj.balance >= 0) {
           conv.ask(
