@@ -14,7 +14,7 @@ app.intent("Default Welcome Intent", conv => {
 //Given a nameKey (category), search an array of objects for an object with the name of nameKey and return that object.
 function search(nameKey, myArray) {
   for (var i = 0; i < myArray.length; i++) {
-    if (myArray[i].name == nameKey) {
+    if (myArray[i].name.replace(/[^a-zA-Z0-9 ]/g,'') == nameKey.replace(/[^a-zA-Z0-9 ]/g,'')) {
       return myArray[i];
     }
   }
