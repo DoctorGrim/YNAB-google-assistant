@@ -7,13 +7,7 @@
     "ynab-google-assistant": "start.js"
   },
   "scripts": {
-    "lint": "eslint --fix \"**/*.js\"",
-    "start": "firebase serve --only functions",
-    "deploy": "firebase deploy --only functions",
-    "test": "npm run lint"
-  },
-  "engines": {
-    "node": "8"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
@@ -29,12 +23,9 @@
   },
   "homepage": "https://github.com/DoctorGrim/YNAB-google-assistant#readme",
   "dependencies": {
-    "actions-on-google": "^2.0.0",
-    "firebase-admin": "^5.11.0",
-    "firebase-functions": "^1.0.0",
+    "actions-on-google": "^2.11.0",
+    "firebase-admin": "^8.3.0",
+    "firebase-functions": "^3.2.0",
     "ynab": "^1.15.0"
-  },
-  "devDependencies": {
-    "eslint": "^4.19.0"
   }
 }
