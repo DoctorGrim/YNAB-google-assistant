@@ -74,7 +74,10 @@ app.intent("get balance", (conv, { categories }) => {
         `I'm sorry, I couldn't find a category called ${categories}. Do you want to check another balance?`
       );
     }
-  });
+  })
+  .catch(e => {
+      conv.ask(`There was an error fetching your information. Please try again later. Do you want to check another balance?`);
+    });
 });
 
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest(app);
