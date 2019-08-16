@@ -93,9 +93,9 @@ app.intent("get balance", (conv, { categories }) => {
 app.intent('no input', (conv) => {
   const repromptCount = parseInt(conv.arguments.get('REPROMPT_COUNT'));
   if (repromptCount === 0) {
-  conv.ask(`You can say something like Groceries, Eating Out, Insurance Premiums.`);
+  conv.ask(`You can say something like how much do i have left in groceries`);
   } else if (repromptCount === 1) {
-  conv.ask(`You can check a category balance by saying something like What\'s the balance of Groceries?`);
+  conv.ask(`You can check a category balance by saying something like What\'s the balance of my electric category?`);
   // If the user doesn't say anything after the final reprompt, google will automatically end the dialog.
   } else if (conv.arguments.get('IS_FINAL_REPROMPT')) {
   conv.close(`Can I do anything else for you?  If not you can say I\'m done.`);
