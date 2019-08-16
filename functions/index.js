@@ -13,11 +13,20 @@ const app = dialogflow({ debug: true }); //is this redundant with line 4?
 
 //Given a nameKey (category), search an array of objects for an object with the name of nameKey and return that object.
 function search(nameKey, myArray) {
+  // The clean function clears any char issues relating to fetching category names from 
+  function clean(string) {
+    string = string
+      .replace(/[^a-zA-Z0-9 ]/g, "")
+      .replace(
+        /([\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g,
+        ""
+      )
+      .replace(" ", "")
+      .trim();
+    return string;
+  }
   for (var i = 0; i < myArray.length; i++) {
-    if (
-      myArray[i].name.replace(/[^a-zA-Z0-9 ]/g, "") ==
-      nameKey.replace(/[^a-zA-Z0-9 ]/g, "")
-    ) {
+    if (clean(myArray[i].name) == clean(nameKey)) {
       return myArray[i];
     }
   }
