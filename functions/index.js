@@ -86,8 +86,9 @@ app.intent("get balance", (conv, { categories }) => {
 });
 
 /* 
-* NOTE:
-* 
+* NOTE: Reprompts only work on smart speakers.
+* These are default. They are not intent-specific. For this we will need dynamic reprompts.
+* I used default since currently our only functionality is category balance fetching.
 */
 app.intent('no input', (conv) => {
   const repromptCount = parseInt(conv.arguments.get('REPROMPT_COUNT'));
