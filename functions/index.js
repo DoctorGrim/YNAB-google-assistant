@@ -74,4 +74,22 @@ app.intent("get balance", (conv, { categories }) => {
     });
 });
 
+/* 
+* NOTE: Reprompts only work on smart speakers.
+* These are default. They are not intent-specific. For this we will need dynamic reprompts.
+* I used default since currently our only functionality is category balance fetching.
+*/
+app.intent('no input', (conv) => {
+  const repromptCount = parseInt(conv.arguments.get('REPROMPT_COUNT'));
+  if (repromptCount === 0) {
+  conv.ask(`You can say something like how much do i have left in groceries`);
+  } else if (repromptCount === 1) {
+  conv.ask(`You can check a category balance by saying something like What\'s the balance of my electric category?`);
+  // If the user doesn't say anything after the final reprompt, google will automatically end the dialog.
+  } else if (conv.arguments.get('IS_FINAL_REPROMPT')) {
+  conv.close(`Can I do anything else for you?  If not you can say I\'m done.`);
+  }
+});
+
+
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest(app);
