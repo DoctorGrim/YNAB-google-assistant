@@ -1,4 +1,4 @@
-const { dialogflow, SignIn } = require("actions-on-google");
+const { dialogflow } = require("actions-on-google");
 const functions = require("firebase-functions");
 
 process.env.DEBUG = "dialogflow:debug"; // enables lib debugging statements
@@ -7,15 +7,41 @@ const ynab = require("ynab");
 
 const app = dialogflow({ debug: true }); //is this redundant with line 4?
 
-// app.intent("Default Welcome Intent", conv => {
-//   conv.ask(` What information can I get for you today?`);
-// });
+const WELCOME = [
+  "Let's get started!",
+  "You Need a Budget is ready to roll!",
+  "Greetings! How can I assist?",
+  "Are you ready to give every dollar a job?",
+  "You Need a Budget is ready for budgeting!",
+  "Let's budget!",
+  "You need a budget.  Don't we all?",
+  "Let's do this!",
+  "I've been waiting for you!",
+  "Hey there!",
+  "Together again!",
+  "Ahoy, budgeting straight ahead.",
+  "More like We NAB, am I right?",
+  "Super budget friends!",
+  "It's budget time!",
+  "One for the money, two for the, nevermind.",
+  "Get thee to the budget!",
+  "Hit me budget, one more time.",
+  "Welcome to You Need a Budget. And we're off!",
+  "Welcome to You Need a Budget.  So we're doing this!",
+  "Welcome to You Need a Budget.  Here we go!"
+];
+
+app.intent("Default Welcome Intent", conv => {
+  let item = Math.floor(Math.random() * WELCOME.length);
+  conv.ask(`${WELCOME[item]}, What information can I get for you today?`);
+});
 
 //Given a nameKey (category), search an array of objects for an object with the name of nameKey and return that object.
 function search(nameKey, myArray) {
-  // The clean function clears any char issues relating to fetching category names from 
+  // The clean function clears any char issues relating to fetching category names from
   function clean(string) {
     string = string
+      .toLowerCase()
       .replace(/[^a-zA-Z0-9 ]/g, "")
       .replace(
         /([\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g,
@@ -65,9 +91,9 @@ app.intent("get balance", (conv, { categories }) => {
         // If a user has gone over their budget.
       } else if (categoryObj.balance < 0) {
         conv.ask(
-          `The current balance of ${categoryObj.name} is overspent by $${
-            -categoryObj.balance
-          }. Can I do anything else for you? If not you can say I'm done.`
+          `The current balance of ${
+            categoryObj.name
+          } is overspent by $${-categoryObj.balance}. Can I do anything else for you? If not you can say I'm done.`
         );
         // In the case that no category is found, this will ask the user to try again.
       } else {
@@ -83,22 +109,25 @@ app.intent("get balance", (conv, { categories }) => {
     });
 });
 
-/* 
-* NOTE: Reprompts only work on smart speakers.
-* These are default. They are not intent-specific. For this we will need dynamic reprompts.
-* I used default since currently our only functionality is category balance fetching.
-*/
-app.intent('no input', (conv) => {
-  const repromptCount = parseInt(conv.arguments.get('REPROMPT_COUNT'));
+/*
+ * NOTE: Reprompts only work on smart speakers.
+ * These are default. They are not intent-specific. For this we will need dynamic reprompts.
+ * I used default since currently our only functionality is category balance fetching.
+ */
+app.intent("no input", conv => {
+  const repromptCount = parseInt(conv.arguments.get("REPROMPT_COUNT"));
   if (repromptCount === 0) {
-  conv.ask(`You can say something like how much do i have left in groceries`);
+    conv.ask(`You can say something like how much do i have left in groceries`);
   } else if (repromptCount === 1) {
-  conv.ask(`You can check a category balance by saying something like What\'s the balance of my electric category?`);
-  // If the user doesn't say anything after the final reprompt, google will automatically end the dialog.
-  } else if (conv.arguments.get('IS_FINAL_REPROMPT')) {
-  conv.close(`Can I do anything else for you?  If not you can say I\'m done.`);
+    conv.ask(
+      `You can check a category balance by saying something like What\'s the balance of my electric category?`
+    );
+    // If the user doesn't say anything after the final reprompt, google will automatically end the dialog.
+  } else if (conv.arguments.get("IS_FINAL_REPROMPT")) {
+    conv.close(
+      `Can I do anything else for you?  If not you can say I\'m done.`
+    );
   }
 });
-
 
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest(app);
