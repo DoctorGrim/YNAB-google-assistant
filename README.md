@@ -47,6 +47,10 @@ branch. Pull requests are warmly welcome. This project uses the Google Actions c
 - Repository: https://github.com/DoctorGrim/YNAB-google-assistant
 - Issue tracker: https://github.com/DoctorGrim/YNAB-google-assistant/issues
 
+This project adheres to YNAB's privacy policy  and terms of Service which can be found below.
+- YNAB Privacy Policy: https://www.youneedabudget.com/privacy-policy/
+- YNAB Terms of Service: https://www.youneedabudget.com/terms/
+
 ## Licensing
 
 The code in this project is licensed under MIT license.
