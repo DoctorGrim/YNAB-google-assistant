@@ -91,9 +91,9 @@ app.intent("get balance", (conv, { categories }) => {
         // If a user has gone over their budget.
       } else if (categoryObj.balance < 0) {
         conv.ask(
-          `The current balance of ${
+          `The current balance of your ${
             categoryObj.name
-          } is overspent by $${-categoryObj.balance}. Can I do anything else for you? If not you can say I'm done.`
+          } category is overspent by $${-categoryObj.balance}. Can I do anything else for you? If not you can say I'm done.`
         );
         // In the case that no category is found, this will ask the user to try again.
       } else {
