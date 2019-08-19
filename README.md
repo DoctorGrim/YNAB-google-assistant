@@ -54,3 +54,5 @@ This project adheres to YNAB's privacy policy  and terms of Service which can be
 ## Licensing
 
 The code in this project is licensed under MIT license.
+
+YNAB is a trademark of You Need A Budget LLC.
