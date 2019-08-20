@@ -109,6 +109,77 @@ app.intent("get balance", (conv, { categories }) => {
     });
 });
 
+app.intent(
+  "make transaction",
+  async (conv, { amount, payee, category, account }) => {
+    //Make a new instance of ynabAPI. Do I need an if(ynabAPI)?
+    const ynabAPI = new ynab.API(conv.user.raw.accessToken);
+
+    //Using a global variable at the moment to keep the try/catch isolated
+    try {
+      const allAccountData = await ynabAPI.accounts.getAccounts("default");
+      var accountList = allAccountData.data.accounts.map(account => {
+        return {
+          name: account.name.toLowerCase(),
+          id: account.id
+        };
+      });
+      var allCategories = await ynabAPI.months.getBudgetMonth(
+        "default",
+        "current"
+      );
+      var categoryList = allCategories.data.month.categories.map(c => {
+        return {
+          name: c.name.toLowerCase(),
+          id: c.id
+        };
+      });
+      
+    } catch (e) {
+      conv.ask(`There was an error: ${e}`);
+    }
+
+     conv.data.accountID = search(account, accountList).id;
+     conv.data.categoryID = search(category, categoryList).id;
+     conv.data.amount = -amount.amount;
+     conv.data.payee = payee;
+
+
+    conv.ask(
+      `You spent $${
+        amount.amount
+      } on ${category} at ${payee} from your ${account}. Is that correct?`
+    );
+    
+  }
+);
+
+app.intent("make transaction - yes", async (conv, {}) => {
+  const ynabAPI = new ynab.API(conv.user.raw.accessToken);
+  const milliAmount = conv.data.amount * 1000;
+  const date = ynab.utils.getCurrentDateInISOFormat()
+  // conv.ask(`conv.data.accountID is: ${conv.data.accountID}. conv.data.categoryID is ${conv.data.categoryID}.`) 
+  // conv.ask(`The date is: ${date}.`) 
+  // conv.ask(`The amount is: ${milliAmount}. The payee is: ${conv.data.payee}.`);
+  
+  const data = {
+    "transaction": {
+      "account_id": conv.data.accountID,
+      "date": date,
+      "amount": milliAmount, 
+      "payee_name": conv.data.payee,
+      "category_id": conv.data.categoryID,
+      }  
+    };
+    
+    try{
+      await ynabAPI.transactions.createTransaction('default', data);
+      conv.ask(`Your transaction has been recorded. Go you!`)
+    }catch(e){
+      conv.ask(`There was an error: ${JSON.stringify(e)}`);
+    }
+});
+
 /*
  * NOTE: Reprompts only work on smart speakers.
  * These are default. They are not intent-specific. For this we will need dynamic reprompts.
