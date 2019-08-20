@@ -7,29 +7,7 @@ const ynab = require("ynab");
 
 const app = dialogflow({ debug: true }); //is this redundant with line 4?
 
-const WELCOME = [
-  "Let's get started!",
-  "You Need a Budget is ready to roll!",
-  "Greetings! How can I assist?",
-  "Are you ready to give every dollar a job?",
-  "You Need a Budget is ready for budgeting!",
-  "Let's budget!",
-  "You need a budget.  Don't we all?",
-  "Let's do this!",
-  "I've been waiting for you!",
-  "Hey there!",
-  "Together again!",
-  "Ahoy, budgeting straight ahead.",
-  "More like We NAB, am I right?",
-  "Super budget friends!",
-  "It's budget time!",
-  "One for the money, two for the, nevermind.",
-  "Get thee to the budget!",
-  "Hit me budget, one more time.",
-  "Welcome to You Need a Budget. And we're off!",
-  "Welcome to You Need a Budget.  So we're doing this!",
-  "Welcome to You Need a Budget.  Here we go!"
-];
+const WELCOME = ["YNAB DEV"];
 
 app.intent("Default Welcome Intent", conv => {
   let item = Math.floor(Math.random() * WELCOME.length);
@@ -63,52 +41,99 @@ function search(nameKey, myArray) {
 //to search for the category name passed in and return an object that has the same name. We then speak the category name and balance.
 app.intent("get balance", (conv, { categories }) => {
   //We have to instantiate the new YNAB API after the OAuth token has been stored in conv.user.raw.accessToken.
+
+  //For API token testing use: 0ac5d0e19930544fab97a568a6f4bda90bed5c02a8e1bd3c712c88814377aa4f
+  //When OAuth is working replace the API token below with: conv.user.raw.accessToken
   const ynabAPI = new ynab.API(conv.user.raw.accessToken);
 
-  return ynabAPI.months
-    .getBudgetMonth("default", "current")
-    .then(r => {
-      const ynabCategories = r.data.month.categories;
-      //conv.data.balances will store all the budget information will in the conversation.
-      conv.data.balances = ynabCategories.map(c => {
-        return {
-          name: c.name.toLowerCase(),
-          balance: ynab.utils
-            .convertMilliUnitsToCurrencyAmount(c.balance, 2)
-            .toFixed(2)
-          // budgeted: ynab.utils
-          //   .convertMilliUnitsToCurrencyAmount(c.budgeted, 2)
-          //   .toFixed(2)
-        };
-      });
-      const categoryObj = search(categories, conv.data.balances);
-      if (categoryObj.balance >= 0) {
-        conv.ask(
-          `The current balance of ${categoryObj.name} is $${
-            categoryObj.balance
-          }. Anything else? Just ask for it or say I'm done.`
-        );
-        // If a user has gone over their budget.
-      } else if (categoryObj.balance < 0) {
-        conv.ask(
-          `The current balance of your ${
-            categoryObj.name
-          } category is overspent by $${-categoryObj.balance}. Can I do anything else for you? If not you can say I'm done.`
-        );
-        // In the case that no category is found, this will ask the user to try again.
-      } else {
-        conv.ask(
-          `I'm sorry, I couldn't find a category called ${categories}. Do you want to check another balance?`
-        );
-      }
-    })
-    .catch(e => {
-      conv.ask(
-        `There was an error fetching your information. Please try again later. Do you want to check another balance?`
-      );
-    });
+  return (
+    ynabAPI.months
+      //When using the API token use the budget ID: 7f7e5fce-4f83-44ac-87d0-179b16a180d3
+      //When OAuth is working replace the budget ID below with 'default'
+      .getBudgetMonth("default", "current")
+      .then(r => {
+        const ynabCategories = r.data.month.categories;
+        //conv.data.balances will store all the budget information will in the conversation.
+        conv.data.balances = ynabCategories.map(c => {
+          return {
+            name: c.name.toLowerCase(),
+            balance: ynab.utils
+              .convertMilliUnitsToCurrencyAmount(c.balance, 2)
+              .toFixed(2)
+            // budgeted: ynab.utils
+            //   .convertMilliUnitsToCurrencyAmount(c.budgeted, 2)
+            //   .toFixed(2)
+          };
+        });
+        const categoryObj = search(categories, conv.data.balances);
+        if (categoryObj.balance >= 0) {
+          conv.ask(
+            `The current balance of ${categoryObj.name} is $${
+              categoryObj.balance
+            }. Anything else? Just ask for it or say I'm done.`
+          );
+          // If a user has gone over their budget.
+        } else if (categoryObj.balance < 0) {
+          conv.ask(
+            `The current balance of your ${
+              categoryObj.name
+            } category is overspent by $${-categoryObj.balance}. Can I do anything else for you? If not you can say I'm done.`
+          );
+          // In the case that no category is found, this will ask the user to try again.
+        } else {
+          conv.ask(
+            `I'm sorry, I couldn't find a category called ${categories}. Do you want to check another balance?`
+          );
+        }
+      })
+      .catch(e => {
+        conv.ask(`Error: ${e} `);
+      })
+  );
 });
 
+app.intent(
+  "getting multiple inputs",
+  async (conv, { amount, payee, category, account }) => {
+    //Make a new instance of ynabAPI. Do I need an if(ynabAPI)?
+    const ynabAPI = new ynab.API(conv.user.raw.accessToken);
+
+    //Using a global variable at the moment to keep the try/catch isolated
+    try {
+      const allAccountData = await ynabAPI.accounts.getAccounts("default");
+      var accountList = allAccountData.data.accounts.map(account => {
+        return {
+          name: account.name.toLowerCase(),
+          id: account.id
+        };
+      });
+      const ynabCategories = r.data.month.categories;
+        //conv.data.balances will store all the budget information will in the conversation.
+        conv.data.balances = ynabCategories.map(c => {
+          return {
+            name: c.name.toLowerCase(),
+            balance: ynab.utils
+              .convertMilliUnitsToCurrencyAmount(c.balance, 2)
+              .toFixed(2)
+            // budgeted: ynab.utils
+            //   .convertMilliUnitsToCurrencyAmount(c.budgeted, 2)
+            //   .toFixed(2)
+          };
+        });
+
+    } catch (e) {
+      conv.ask(`There was an error: ${e}`);
+    }
+
+    const accountObj = search(account, accountList);
+    conv.ask(
+      `You spent $${
+        amount.amount
+      } on ${category} at ${payee} from your ${account} account.`
+    );
+    conv.ask(`The account ID is: ${accountObj.id}`);
+  }
+);
 /*
  * NOTE: Reprompts only work on smart speakers.
  * These are default. They are not intent-specific. For this we will need dynamic reprompts.
