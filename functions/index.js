@@ -107,31 +107,30 @@ app.intent(
           id: account.id
         };
       });
-      const ynabCategories = r.data.month.categories;
-        //conv.data.balances will store all the budget information will in the conversation.
-        conv.data.balances = ynabCategories.map(c => {
-          return {
-            name: c.name.toLowerCase(),
-            balance: ynab.utils
-              .convertMilliUnitsToCurrencyAmount(c.balance, 2)
-              .toFixed(2)
-            // budgeted: ynab.utils
-            //   .convertMilliUnitsToCurrencyAmount(c.budgeted, 2)
-            //   .toFixed(2)
-          };
-        });
-
+      var allCategories = await ynabAPI.months.getBudgetMonth(
+        "default",
+        "current"
+      );
+      var categoryList = allCategories.data.month.categories.map(c => {
+        return {
+          name: c.name.toLowerCase(),
+          id: c.id
+        };
+      });
+      
     } catch (e) {
       conv.ask(`There was an error: ${e}`);
     }
 
     const accountObj = search(account, accountList);
+    const categoryObj = search(category, categoryList);
+
     conv.ask(
       `You spent $${
         amount.amount
       } on ${category} at ${payee} from your ${account} account.`
     );
-    conv.ask(`The account ID is: ${accountObj.id}`);
+    conv.ask(`The category ID is: ${categoryObj.id}. The account ID is: ${accountObj.id}.`);
   }
 );
 /*
