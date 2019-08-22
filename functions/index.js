@@ -33,7 +33,7 @@ const WELCOME = [
 
 app.intent("Default Welcome Intent", conv => {
   let item = Math.floor(Math.random() * WELCOME.length);
-  conv.ask(`${WELCOME[item]} What information can I get for you today?`);
+  conv.ask(`${WELCOME[item]} What category balance can I get for you today?`);
 });
 
 //Given a nameKey (category), search an array of objects for an object with the name of nameKey and return that object.
