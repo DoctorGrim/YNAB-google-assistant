@@ -61,52 +61,46 @@ function search(nameKey, myArray) {
 //This intent is triggered by giving a category. It fetches all the budget categories from the default budget for the current month.
 //The returned categories are parsed down to the name, balance, and budgeted amount (we may not need this). We then use a search function
 //to search for the category name passed in and return an object that has the same name. We then speak the category name and balance.
-app.intent("get balance", (conv, { categories }) => {
+app.intent("get balance", async (conv, { categories }) => {
   //We have to instantiate the new YNAB API after the OAuth token has been stored in conv.user.raw.accessToken.
   const ynabAPI = new ynab.API(conv.user.raw.accessToken);
+  try {
+    var budgetMonth = await ynabAPI.months.getBudgetMonth("default", "current");
+  } catch (e) {
+    conv.ask(
+      `There was an error fetching your information. Please try again later. Do you want to check another balance?`
+    );
+  }
 
-  return ynabAPI.months
-    .getBudgetMonth("default", "current")
-    .then(r => {
-      const ynabCategories = r.data.month.categories;
-      //conv.data.balances will store all the budget information will in the conversation.
-      conv.data.balances = ynabCategories.map(c => {
-        return {
-          name: c.name.toLowerCase(),
-          balance: ynab.utils
-            .convertMilliUnitsToCurrencyAmount(c.balance, 2)
-            .toFixed(2)
-          // budgeted: ynab.utils
-          //   .convertMilliUnitsToCurrencyAmount(c.budgeted, 2)
-          //   .toFixed(2)
-        };
-      });
-      const categoryObj = search(categories, conv.data.balances);
-      if (categoryObj.balance >= 0) {
-        conv.ask(
-          `The current balance of ${categoryObj.name} is $${
-            categoryObj.balance
-          }. Anything else? Just ask for it or say I'm done.`
-        );
-        // If a user has gone over their budget.
-      } else if (categoryObj.balance < 0) {
-        conv.ask(
-          `The current balance of your ${
-            categoryObj.name
-          } category is overspent by $${-categoryObj.balance}. Can I do anything else for you? If not you can say I'm done.`
-        );
-        // In the case that no category is found, this will ask the user to try again.
-      } else {
-        conv.ask(
-          `I'm sorry, I couldn't find a category called ${categories}. Do you want to check another balance?`
-        );
-      }
-    })
-    .catch(e => {
-      conv.ask(
-        `There was an error fetching your information. Please try again later. Do you want to check another balance?`
-      );
-    });
+  conv.data.balances = budgetMonth.data.month.categories.map(c => {
+    return {
+      name: c.name.toLowerCase(),
+      balance: ynab.utils
+        .convertMilliUnitsToCurrencyAmount(c.balance, 2)
+        .toFixed(2)
+    };
+  });
+  const categoryObj = search(categories, conv.data.balances);
+
+  if (categoryObj.balance >= 0) {
+    conv.ask(
+      `The current balance of ${categoryObj.name} is $${
+        categoryObj.balance
+      }. Anything else? Just ask for it or say I'm done.`
+    );
+    // If a user has gone over their budget.
+  } else if (categoryObj.balance < 0) {
+    conv.ask(
+      `The current balance of your ${
+        categoryObj.name
+      } category is overspent by $${-categoryObj.balance}. Can I do anything else for you? If not you can say I'm done.`
+    );
+    // In the case that no category is found, this will ask the user to try again.
+  } else {
+    conv.ask(
+      `I'm sorry, I couldn't find a category called ${categories}. Do you want to check another balance?`
+    );
+  }
 });
 
 /*
